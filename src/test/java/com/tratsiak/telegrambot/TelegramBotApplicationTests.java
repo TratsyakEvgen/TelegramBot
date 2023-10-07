@@ -1,10 +1,10 @@
-package com.tratsiak.telegarmbot;
+package com.tratsiak.telegrambot;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class TelegarmBotApplicationTests {
+class TelegramBotApplicationTests {
 
     @Test
     void contextLoads() {
