@@ -1,11 +1,11 @@
-package com.tratsiak.telegrambot.bot.controller.handler.impl;
+package com.tratsiak.telegrambot.bot.controller.telegram.handler.impl;
 
 
-import com.tratsiak.telegrambot.bot.controller.BotController;
-import com.tratsiak.telegrambot.bot.controller.handler.CommandHandler;
-import com.tratsiak.telegrambot.bot.controller.handler.CommandHandlerException;
-import com.tratsiak.telegrambot.bot.controller.handler.annatation.Command;
-import com.tratsiak.telegrambot.bot.controller.session.Session;
+import com.tratsiak.telegrambot.bot.controller.telegram.BotController;
+import com.tratsiak.telegrambot.bot.controller.telegram.handler.CommandHandler;
+import com.tratsiak.telegrambot.bot.controller.telegram.handler.CommandHandlerException;
+import com.tratsiak.telegrambot.bot.controller.telegram.handler.annatation.Command;
+import com.tratsiak.telegrambot.bot.controller.telegram.session.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;

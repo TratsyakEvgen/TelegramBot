@@ -1,4 +1,4 @@
-package com.tratsiak.telegrambot.bot.controller.handler.annatation;
+package com.tratsiak.telegrambot.bot.controller.telegram.handler.annatation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

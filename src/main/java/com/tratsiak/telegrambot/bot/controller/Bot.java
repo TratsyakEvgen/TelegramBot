@@ -1,9 +1,9 @@
-package com.tratsiak.telegrambot.bot;
+package com.tratsiak.telegrambot.bot.controller;
 
-import com.tratsiak.telegrambot.bot.controller.handler.CommandHandler;
-import com.tratsiak.telegrambot.bot.controller.handler.CommandHandlerException;
-import com.tratsiak.telegrambot.bot.controller.session.Session;
-import com.tratsiak.telegrambot.bot.controller.session.UserSession;
+import com.tratsiak.telegrambot.bot.controller.telegram.handler.CommandHandler;
+import com.tratsiak.telegrambot.bot.controller.telegram.handler.CommandHandlerException;
+import com.tratsiak.telegrambot.bot.controller.telegram.session.Session;
+import com.tratsiak.telegrambot.bot.controller.telegram.session.UserSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -54,12 +54,11 @@ public class Bot extends TelegramLongPollingBot {
             Session session = optionalSession.get();
             session.setChatId(message.getChatId());
 
-            if (update.hasCallbackQuery() || message.isCommand()) {
-                session.setNextCommand(null);
-            } else {
-                session.setContract(command);
+            if (!update.hasCallbackQuery() && !message.isCommand()) {
+                session.setMassage(command);
                 command = session.getNextCommand();
             }
+
 
             String finalCommand = command;
             new Thread(() -> prepareAndSendResponse(finalCommand, session)).start();
@@ -76,6 +75,7 @@ public class Bot extends TelegramLongPollingBot {
             Optional<SendMessage> optionalSendMessage = commandHandler.execute(command, session);
             if (optionalSendMessage.isPresent()) {
                 execute(optionalSendMessage.get());
+                session.setPreviousCommand(command);
             }
         } catch (TelegramApiException | CommandHandlerException e) {
             e.printStackTrace();

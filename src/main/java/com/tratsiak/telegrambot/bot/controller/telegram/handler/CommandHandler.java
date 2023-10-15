@@ -1,7 +1,7 @@
-package com.tratsiak.telegrambot.bot.controller.handler;
+package com.tratsiak.telegrambot.bot.controller.telegram.handler;
 
 
-import com.tratsiak.telegrambot.bot.controller.session.Session;
+import com.tratsiak.telegrambot.bot.controller.telegram.session.Session;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 import java.util.Optional;

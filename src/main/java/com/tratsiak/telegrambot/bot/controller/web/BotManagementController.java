@@ -1,6 +1,7 @@
-package com.tratsiak.telegrambot.web.controller;
+package com.tratsiak.telegrambot.bot.controller.web;
 
-import com.tratsiak.telegrambot.bot.controller.session.UserSession;
+import com.tratsiak.telegrambot.bot.controller.telegram.session.UserSession;
+import com.tratsiak.telegrambot.bot.service.ServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,11 +17,17 @@ public class BotManagementController {
     private BotSession botSession;
     @Autowired
     private UserSession userSession;
+
     @GetMapping("/start")
     private String startBot() {
         if (!botSession.isRunning()) {
             botSession.start();
-            userSession.initSession();
+            try {
+                userSession.initSession();
+            } catch (ServiceException e) {
+                e.printStackTrace();
+                return e.getMessage();
+            }
         }
         return "start";
     }

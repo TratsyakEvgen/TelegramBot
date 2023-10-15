@@ -1,4 +1,4 @@
-package com.tratsiak.telegrambot.bot.controller.handler;
+package com.tratsiak.telegrambot.bot.controller.telegram.handler;
 
 public class CommandHandlerException extends Exception {
     public CommandHandlerException() {
