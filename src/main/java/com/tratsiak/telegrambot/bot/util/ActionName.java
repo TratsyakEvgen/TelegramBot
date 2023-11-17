@@ -8,9 +8,10 @@ import lombok.ToString;
 @Getter
 @ToString
 public enum ActionName {
-    ACCOMI_ACTIVATE("Активация договора в АССОМИ"),
-    ACCOMI_STATUS("Статус договора в АССОМИ"),
-    TM_STATUS("Статус договора в АССОМИ"),
+    ASSOMI_ACTIVATE("Активация договора в АССОМИ"),
+    ASSOMI_INFO_BY_ACTIVATION("Просмотр не активированных услуг в АССОМИ"),
+    ASSOMI_STATUS("Статус договора в АССОМИ"),
+    TM_STATUS("Статус договора в ТМ"),
     LOCK("Блокировка");
 
     private final String title;

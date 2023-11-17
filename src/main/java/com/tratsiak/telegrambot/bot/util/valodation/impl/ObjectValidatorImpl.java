@@ -1,7 +1,7 @@
 package com.tratsiak.telegrambot.bot.util.valodation.impl;
 
-import com.tratsiak.telegrambot.bot.util.valodation.ValidationException;
 import com.tratsiak.telegrambot.bot.util.valodation.ObjectValidator;
+import com.tratsiak.telegrambot.bot.util.valodation.ValidationException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,9 +11,12 @@ import java.util.Set;
 
 @Component
 public class ObjectValidatorImpl implements ObjectValidator {
-
+    private final Validator validator;
     @Autowired
-    private Validator validator;
+    public ObjectValidatorImpl(Validator validator) {
+        this.validator = validator;
+    }
+
     @Override
     public <T> void validate(T obj) throws ValidationException {
         Set<ConstraintViolation<T>> violations = validator.validate(obj);
@@ -24,7 +27,7 @@ public class ObjectValidatorImpl implements ObjectValidator {
                 sb.append(constraintViolation.getMessage());
                 sb.append("\n");
             }
-            throw new ValidationException("Неверный формат данных: " + sb);
+            throw new ValidationException(String.valueOf(sb));
         }
     }
 }

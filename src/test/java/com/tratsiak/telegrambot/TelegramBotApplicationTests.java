@@ -15,11 +15,11 @@ class TelegramBotApplicationTests {
     LogRepository logRepository;
 
     @Test
-    void contextLoads(){
+    void contextLoads() {
         Contract contract = Contract.builder()
                 .userId(1234)
                 .numberOfContract("35332535234")
-                .action(ActionName.ACCOMI_ACTIVATE.getTitle())
+                .action(ActionName.ASSOMI_ACTIVATE.getTitle())
                 .comment(ServiceName.PACKAGE.getTitle())
                 .build();
         try {

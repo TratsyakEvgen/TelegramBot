@@ -1,27 +1,32 @@
 package com.tratsiak.telegrambot.bot.repository.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tratsiak.telegrambot.bot.model.Contract;
-import com.tratsiak.telegrambot.bot.repository.AbstractHttpClient;
 import com.tratsiak.telegrambot.bot.repository.LogRepository;
 import com.tratsiak.telegrambot.bot.repository.RepositoryException;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.tratsiak.telegrambot.bot.repository.client.RepositoryHttpClient;
+import com.tratsiak.telegrambot.bot.repository.client.RepositoryHttpClientException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
-import java.net.http.HttpClient;
-
 
 @Repository
-public class LogRepositoryImpl extends AbstractHttpClient implements LogRepository {
+public class LogRepositoryImpl implements LogRepository {
 
-    @Autowired
-    public LogRepositoryImpl(HttpClient httpClient, ObjectMapper objectMapper, @Value("${bot.manager.uri}") String uri) {
-        super(httpClient, objectMapper, uri);
+    private final RepositoryHttpClient client;
+    private final String uri;
+
+    public LogRepositoryImpl(RepositoryHttpClient client, @Value("${gateway}") String uri) {
+        this.client = client;
+        this.uri = uri;
     }
+
 
     @Override
     public void create(Contract contract) throws RepositoryException {
-        sendPost("histories", contract);
+        try {
+            client.post(uri + "/BotManager/histories", contract);
+        } catch (RepositoryHttpClientException e) {
+            throw new RepositoryException(String.format("Failed send history %s", contract.toString()), e);
+        }
     }
 }

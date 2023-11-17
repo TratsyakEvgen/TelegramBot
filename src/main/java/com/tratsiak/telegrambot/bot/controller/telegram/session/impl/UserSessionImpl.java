@@ -12,24 +12,20 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class UserSessionImpl implements UserSession {
+    private final SessionService service;
+    private ConcurrentHashMap<Long, Session> session;
 
     @Autowired
-    private SessionService service;
-    private ConcurrentHashMap<Long, Session> session;
+    public UserSessionImpl(SessionService service) {
+        this.service = service;
+    }
 
     public Optional<Session> getSession(long id) {
         return Optional.ofNullable(session.get(id));
     }
 
-    public void putSession(Session session) {
-        this.session.put(session.getUserId(), session);
-    }
 
-    public void removeSession(long id) {
-        session.remove(id);
-    }
-
-    public void initSession() throws ServiceException {
+    public void initSessions() throws ServiceException {
         session = new ConcurrentHashMap<>(service.getSessions());
     }
 

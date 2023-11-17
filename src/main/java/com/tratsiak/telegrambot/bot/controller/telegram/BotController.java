@@ -3,6 +3,9 @@ package com.tratsiak.telegrambot.bot.controller.telegram;
 import com.tratsiak.telegrambot.bot.controller.telegram.handler.annatation.Command;
 import com.tratsiak.telegrambot.bot.controller.telegram.session.Session;
 import com.tratsiak.telegrambot.bot.model.Contract;
+import com.tratsiak.telegrambot.bot.model.Event;
+import com.tratsiak.telegrambot.bot.model.InfoByActivation;
+import com.tratsiak.telegrambot.bot.model.StatusByContract;
 import com.tratsiak.telegrambot.bot.service.ContractService;
 import com.tratsiak.telegrambot.bot.service.ServiceException;
 import com.tratsiak.telegrambot.bot.util.ActionName;
@@ -13,12 +16,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
+import java.util.Map;
+
 @Component
 public class BotController {
-
+    private final ContractService contractService;
 
     @Autowired
-    private ContractService contractService;
+    public BotController(ContractService contractService) {
+        this.contractService = contractService;
+    }
 
 
     @Command(name = "/start")
@@ -31,79 +38,82 @@ public class BotController {
         return VisualPresentation.getMainMenu(session.getChatId());
     }
 
-    @Command(name = "/accomiMenu")
-    public SendMessage getAccomiMenu(Session session) {
-        return VisualPresentation.getAccomiMenu(session.getChatId());
+    @Command(name = "/menuASSOMI")
+    public SendMessage getMenuASSOMI(Session session) {
+        return VisualPresentation.getMenuASSOMI(session.getChatId());
     }
 
-    @Command(name = "/tmMenu")
+    @Command(name = "/menuTM")
     public SendMessage getTmMenu(Session session) {
-        return VisualPresentation.getTmMenu(session.getChatId());
+        return VisualPresentation.getMenuTM(session.getChatId());
     }
 
-    @Command(name = "/statusTmMenu")
+    @Command(name = "/statusMenuTM")
     public SendMessage getContractStatusTm(Session session) {
-        session.setNextCommand("/statusTm");
-        return VisualPresentation.getContractMenu(session.getContract(), session.getChatId());
+        session.setNextCommand("/statusTM");
+        return VisualPresentation.getContractMenu(session.getNumberOfContract(), session.getChatId());
     }
 
-    @Command(name = "/blockTmMenu")
+    @Command(name = "/blockMenuTM")
     public SendMessage getContractBlockTm(Session session) {
-        session.setNextCommand("/blockTmComment");
-        return VisualPresentation.getContractMenu(session.getContract(), session.getChatId());
+        session.setNextCommand("/blockCommentTM");
+        return VisualPresentation.getContractMenu(session.getNumberOfContract(), session.getChatId());
     }
 
-    @Command(name = "/blockTmComment")
+    @Command(name = "/blockCommentTM")
     public SendMessage getCommentBlockTm(Session session) {
-        session.setNextCommand("/blockTm");
-        session.setContract(session.getMassage());
+        session.setNextCommand("/blockTM");
+        session.setNumberOfContract(session.getMassage());
         return VisualPresentation.getCommentMenu(session.getChatId());
     }
 
-    @Command(name = "/activateAccomiMenu")
-    public SendMessage getContractActivateAccomi(Session session) {
-        session.setNextCommand("/serviceMenu");
-        session.setContract(session.getMassage());
-        return VisualPresentation.getContractMenu(session.getContract(), session.getChatId());
+    @Command(name = "/activateMenuASSOMI")
+    public SendMessage getContractActivateASSOMI(Session session) {
+        session.setNextCommand("/eventMenuASSOMI");
+        return VisualPresentation.getContractMenu(session.getNumberOfContract(), session.getChatId());
     }
 
-    @Command(name = "/statusAccomiMenu")
-    public SendMessage getContractStatusAccomi(Session session) {
-        session.setNextCommand("/statusAccomi");
-        return VisualPresentation.getContractMenu(session.getContract(), session.getChatId());
+    @Command(name = "/statusMenuASSOMI")
+    public SendMessage getContractStatusASSOMI(Session session) {
+        session.setNextCommand("/statusASSOMI");
+        return VisualPresentation.getContractMenu(session.getNumberOfContract(), session.getChatId());
     }
 
 
-    @Command(name = "/statusAccomi")
-    public SendMessage getStatusAccomi(Session session) {
+    @Command(name = "/statusASSOMI")
+    public SendMessage getStatusASSOMI(Session session) {
         session.setNextCommand(null);
         String numberOfContract = session.getMassage();
-        session.setContract(numberOfContract);
+        session.setNumberOfContract(numberOfContract);
         long chatId = session.getChatId();
 
         Contract contract = Contract.builder()
                 .userId(session.getUserId())
                 .numberOfContract(numberOfContract)
-                .action(ActionName.ACCOMI_STATUS.getTitle())
+                .action(ActionName.ASSOMI_STATUS.getTitle())
                 .build();
 
         try {
-            String status = contractService.getStatusFromAccomi(contract);
-            return VisualPresentation.getAccomiMenu(status, chatId);
+            StatusByContract statusByContract = contractService.getStatusFromASSOMI(contract);
+            if (statusByContract.getSubscriberInfo() == null) {
+                return VisualPresentation.getMenuASSOMI(
+                        String.format("По договору %s ничего не найдено", numberOfContract), chatId);
+            }
+            return VisualPresentation.getMenuASSOMI(statusByContract, chatId);
         } catch (ServiceException e) {
             e.printStackTrace();
-            return VisualPresentation.getAccomiMenu(
-                    "Произошла ошибка! Не удалось получить статус", chatId);
+            return VisualPresentation.getMenuASSOMI(
+                    "Произошла ошибка! Не удалось получить статус из Ассоми", chatId);
         } catch (ValidationException e) {
-            return VisualPresentation.getAccomiMenu(e.getMessage(), chatId);
+            return VisualPresentation.getMenuASSOMI(e.getMessage(), chatId);
         }
     }
 
-    @Command(name = "/statusTm")
+    @Command(name = "/statusTM")
     public SendMessage getStatusTm(Session session) {
         session.setNextCommand(null);
         String numberOfContract = session.getMassage();
-        session.setContract(numberOfContract);
+        session.setNumberOfContract(numberOfContract);
         long chatId = session.getChatId();
 
         Contract contract = Contract.builder()
@@ -114,66 +124,99 @@ public class BotController {
 
         try {
             String status = contractService.getStatusFromTM(contract);
-            return VisualPresentation.getTmMenu(status, chatId);
+            return VisualPresentation.getMenuTM(status, chatId);
         } catch (ServiceException e) {
             e.printStackTrace();
-            return VisualPresentation.getTmMenu(
-                    "Произошла ошибка! Не удалось получить статус", chatId);
+            return VisualPresentation.getMenuTM(
+                    "Произошла ошибка! Не удалось получить статус из TM", chatId);
         } catch (ValidationException e) {
-            return VisualPresentation.getTmMenu(e.getMessage(), chatId);
+            return VisualPresentation.getMenuTM(e.getMessage(), chatId);
         }
     }
 
-    @Command(name = "/blockTm")
+    @Command(name = "/blockTM")
     public SendMessage blockTm(Session session) {
-        if (checkPreviousCommand(session, "/blockTmComment")) {
+        if (checkPreviousCommand(session, "/blockCommentTM")) {
             session.setNextCommand(null);
             long chatId = session.getChatId();
 
             Contract contract = Contract.builder()
                     .userId(session.getUserId())
-                    .numberOfContract(session.getContract())
+                    .numberOfContract(session.getNumberOfContract())
                     .action(ActionName.LOCK.getTitle())
                     .comment(session.getMassage())
                     .build();
             try {
                 contractService.lock(contract);
-                return VisualPresentation.getTmMenu("Запрос на блокировку отправлен", chatId);
+                return VisualPresentation.getMenuTM("Запрос на блокировку отправлен", chatId);
             } catch (ServiceException e) {
                 e.printStackTrace();
-                return VisualPresentation.getTmMenu(
+                return VisualPresentation.getMenuTM(
                         "Произошла ошибка! Не удалось отправить запрос на блокировку", chatId);
             } catch (ValidationException e) {
-                return VisualPresentation.getTmMenu(e.getMessage(), chatId);
+                return VisualPresentation.getMenuTM(e.getMessage(), chatId);
             }
         }
         return getContractBlockTm(session);
     }
 
 
-    @Command(name = "/serviceMenu")
-    public SendMessage getServiceMenu(Session session) {
+    @Command(name = "/eventMenuASSOMI")
+    public SendMessage getEventMenu(Session session) {
         session.setNextCommand(null);
         String numberOfContract = session.getMassage();
-        session.setContract(numberOfContract);
+        session.setNumberOfContract(numberOfContract);
         long chatId = session.getChatId();
 
         Contract contract = Contract.builder()
                 .userId(session.getUserId())
                 .numberOfContract(numberOfContract)
-                .action(ActionName.TM_STATUS.getTitle())
+                .action(ActionName.ASSOMI_INFO_BY_ACTIVATION.getTitle())
                 .build();
 
         try {
-            String status = contractService.getStatusFromAccomi(contract);
-            return VisualPresentation.getSelectService(status, session.getChatId());
+            InfoByActivation infoByActivation = contractService.getInfoByActivation(contract);
+            if (infoByActivation.getSubscriberInfo() == null) {
+                return VisualPresentation.getMenuASSOMI(
+                        String.format("По договору %s ничего не найдено", numberOfContract), chatId);
+            }
+            Map<String, Event> eventMap = infoByActivation.getEventMap();
+            if (eventMap.isEmpty()) {
+                return VisualPresentation.getMenuASSOMI(
+                        String.format("По договору %s все услуги активированы", numberOfContract), chatId);
+            }
+            session.setEventMap(eventMap);
+            return VisualPresentation.getEventMenu(infoByActivation, session.getChatId());
         } catch (ServiceException e) {
             e.printStackTrace();
-            return VisualPresentation.getAccomiMenu(
-                    "Произошла ошибка! Не удалось получить статус", chatId);
+            return VisualPresentation.getMenuASSOMI(
+                    "Произошла ошибка! Не удалось получить информацию об неактивированных услугах", chatId);
         } catch (ValidationException e) {
-            return VisualPresentation.getAccomiMenu(e.getMessage(), chatId);
+            return VisualPresentation.getMenuASSOMI(e.getMessage(), chatId);
         }
+    }
+
+
+    @Command(name = "/serviceMenu")
+    public SendMessage getServiceMenu(Session session) {
+        long chatId = session.getChatId();
+
+        Map<String, Event> eventMap = session.getEventMap();
+
+        if (eventMap == null) {
+            return VisualPresentation.getMenuASSOMI(chatId);
+        }
+
+        String eventId = session.getPresentCommand().split("/")[2];
+        Event event = eventMap.get(eventId);
+        session.setEventMap(null);
+
+        if (event == null) {
+            return VisualPresentation.getMenuASSOMI(chatId);
+        }
+        session.setEvent(event);
+
+        return VisualPresentation.getSelectService(event.getTariff(), session.getChatId());
     }
 
     @Command(name = "/activateIMS")
@@ -198,30 +241,30 @@ public class BotController {
 
 
     private SendMessage activate(Session session, ServiceName serviceName) {
-        if (checkPreviousCommand(session, "/serviceMenu")) {
-            session.setNextCommand(null);
-            String numberOfContract = session.getMassage();
-            session.setContract(numberOfContract);
-            long chatId = session.getChatId();
+        long chatId = session.getChatId();
 
-            Contract contract = Contract.builder()
-                    .userId(session.getUserId())
-                    .numberOfContract(numberOfContract)
-                    .action(ActionName.ACCOMI_ACTIVATE.getTitle())
-                    .comment(serviceName.getTitle())
-                    .build();
-            try {
-                contractService.activate(contract);
-                return VisualPresentation.getAccomiMenu("Отправлено на активацию", chatId);
-            } catch (ServiceException e) {
-                e.printStackTrace();
-                return VisualPresentation.getAccomiMenu(
-                        "Произошла ошибка! Не удалось отправить запрос на активацию", chatId);
-            } catch (ValidationException e) {
-                return VisualPresentation.getAccomiMenu(e.getMessage(), chatId);
-            }
+        Event event = session.getEvent();
+        session.setEvent(null);
+        if (event == null) {
+            return VisualPresentation.getMenuASSOMI(chatId);
         }
-        return getContractActivateAccomi(session);
+
+        Contract contract = Contract.builder()
+                .userId(session.getUserId())
+                .numberOfContract(session.getNumberOfContract())
+                .action(ActionName.ASSOMI_ACTIVATE.getTitle())
+                .comment(serviceName.getTitle())
+                .build();
+        try {
+            contractService.activate(contract, event);
+            return VisualPresentation.getMenuASSOMI("Отправлено на активацию", chatId);
+        } catch (ServiceException e) {
+            e.printStackTrace();
+            return VisualPresentation.getMenuASSOMI(
+                    "Произошла ошибка! Не удалось отправить запрос на активацию", chatId);
+        } catch (ValidationException e) {
+            return VisualPresentation.getMenuASSOMI(e.getMessage(), chatId);
+        }
     }
 
     private boolean checkPreviousCommand(Session session, String command) {

@@ -1,5 +1,9 @@
 package com.tratsiak.telegrambot.bot.view;
 
+import com.tratsiak.telegrambot.bot.model.Event;
+import com.tratsiak.telegrambot.bot.model.InfoByActivation;
+import com.tratsiak.telegrambot.bot.model.StatusByContract;
+import com.tratsiak.telegrambot.bot.model.StatusByService;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
@@ -9,6 +13,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
 import java.util.List;
+import java.util.Map;
 
 
 public class VisualPresentation {
@@ -22,11 +27,11 @@ public class VisualPresentation {
     public final static InlineKeyboardMarkup MAIN = InlineKeyboardMarkup.builder()
             .keyboardRow(List.of(InlineKeyboardButton.builder()
                     .text("Ассоми")
-                    .callbackData("/accomiMenu")
+                    .callbackData("/menuASSOMI")
                     .build()))
             .keyboardRow(List.of(InlineKeyboardButton.builder()
                     .text("TM")
-                    .callbackData("/tmMenu")
+                    .callbackData("/menuTM")
                     .build()))
             .keyboardRow(List.of(InlineKeyboardButton.builder()
                     .text("Назад")
@@ -34,14 +39,14 @@ public class VisualPresentation {
                     .build()))
             .build();
 
-    public final static InlineKeyboardMarkup ACCOMI = InlineKeyboardMarkup.builder()
+    public final static InlineKeyboardMarkup ASSOMI = InlineKeyboardMarkup.builder()
             .keyboardRow(List.of(InlineKeyboardButton.builder()
                     .text("Активация")
-                    .callbackData("/activateAccomiMenu")
+                    .callbackData("/activateMenuASSOMI")
                     .build()))
             .keyboardRow(List.of(InlineKeyboardButton.builder()
                     .text("Статус")
-                    .callbackData("/statusAccomiMenu")
+                    .callbackData("/statusMenuASSOMI")
                     .build()))
             .keyboardRow(List.of(InlineKeyboardButton.builder()
                     .text("Назад")
@@ -52,11 +57,11 @@ public class VisualPresentation {
     public final static InlineKeyboardMarkup TM = InlineKeyboardMarkup.builder()
             .keyboardRow(List.of(InlineKeyboardButton.builder()
                     .text("Статус")
-                    .callbackData("/statusTmMenu")
+                    .callbackData("/statusMenuTM")
                     .build()))
             .keyboardRow(List.of(InlineKeyboardButton.builder()
                     .text("Блокировка")
-                    .callbackData("/blockTmMenu")
+                    .callbackData("/blockMenuTM")
                     .build()))
             .keyboardRow(List.of(InlineKeyboardButton.builder()
                     .text("Назад")
@@ -91,7 +96,7 @@ public class VisualPresentation {
                     .build()))
             .keyboardRow(List.of(InlineKeyboardButton.builder()
                     .text("Назад")
-                    .callbackData("/accomiMenu")
+                    .callbackData("/AssomiMenu")
                     .build()))
             .build();
 
@@ -104,26 +109,45 @@ public class VisualPresentation {
         return getSendMessage("С чем работаем?", MAIN, chatId);
     }
 
-    public static SendMessage getAccomiMenu(long chatId) {
-        return getAccomiMenu(null, chatId);
+    public static SendMessage getMenuASSOMI(long chatId) {
+        return getMenuASSOMI((String) null, chatId);
     }
 
-    public static SendMessage getAccomiMenu(String message, long chatId) {
+    public static SendMessage getMenuASSOMI(String message, long chatId) {
         String userMessage = "Выберите действие:";
         if (message != null) {
-            userMessage= message + "\n" + userMessage;
+            userMessage = message + "\n" + userMessage;
         }
-        return getSendMessage(userMessage, ACCOMI, chatId);
+        return getSendMessage(userMessage, ASSOMI, chatId);
     }
 
-    public static SendMessage getTmMenu(long chatId) {
-        return getTmMenu(null,chatId);
+    public static SendMessage getMenuASSOMI(StatusByContract statusByContract, long chatId) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(statusByContract.getSubscriberInfo());
+        builder.append("\n");
+        List<StatusByService> statusByServices = statusByContract.getStatusByServices();
+        statusByServices.forEach(s -> {
+            builder.append(s.getDate());
+            builder.append(" - ");
+            builder.append(s.getService());
+            builder.append(" - ");
+            builder.append(s.getEvent());
+            builder.append(" - ");
+            builder.append(s.getState());
+            builder.append("\n");
+        });
+        builder.append("Выберите действие:");
+        return getSendMessage(builder.toString(), ASSOMI, chatId);
     }
 
-    public static SendMessage getTmMenu(String message, long chatId) {
+    public static SendMessage getMenuTM(long chatId) {
+        return getMenuTM(null, chatId);
+    }
+
+    public static SendMessage getMenuTM(String message, long chatId) {
         String userMessage = "Выберите действие:";
         if (message != null) {
-            userMessage= message + "\n" + userMessage;
+            userMessage = message + "\n" + userMessage;
         }
         return getSendMessage(userMessage, TM, chatId);
     }
@@ -138,6 +162,21 @@ public class VisualPresentation {
 
     public static SendMessage getSelectService(String messaege, long chatId) {
         return getSendMessage(messaege + "\nАктивировать как:", SELECT_SERVICE, chatId);
+    }
+
+    public static SendMessage getEventMenu(InfoByActivation infoByActivation, long chatId) {
+        return getSendMessage(infoByActivation.getSubscriberInfo() + "\nВыберите действие:",
+                getEvents(infoByActivation.getEventMap()), chatId);
+
+    }
+
+    private static InlineKeyboardMarkup getEvents(Map<String, Event> eventMap) {
+        InlineKeyboardMarkup.InlineKeyboardMarkupBuilder builder = InlineKeyboardMarkup.builder();
+        eventMap.values().forEach(e -> builder.keyboardRow(List.of(InlineKeyboardButton.builder()
+                .text(e.getTariff())
+                .callbackData("/serviceMenu/" + e.getId())
+                .build())));
+        return builder.build();
     }
 
 

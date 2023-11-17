@@ -14,8 +14,12 @@ import java.util.stream.Collectors;
 
 @Service
 public class SessionServiceImpl implements SessionService {
+
+    private final SessionRepository sessionRepository;
     @Autowired
-    private SessionRepository sessionRepository;
+    public SessionServiceImpl(SessionRepository sessionRepository) {
+        this.sessionRepository = sessionRepository;
+    }
 
     @Override
     public Map<Long, Session> getSessions() throws ServiceException {
@@ -23,7 +27,7 @@ public class SessionServiceImpl implements SessionService {
             return sessionRepository.getSessions().stream()
                     .collect(Collectors.toMap(Session::getUserId, Function.identity()));
         } catch (RepositoryException e) {
-            throw new ServiceException("Не удалось получить сессии", e);
+            throw new ServiceException("Failed get sessions", e);
         }
     }
 }

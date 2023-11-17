@@ -16,9 +16,11 @@ import java.util.Optional;
 
 @Component
 public class CommandHandlerImpl implements CommandHandler {
-
+    private final BotController controller;
     @Autowired
-    private BotController controller;
+    public CommandHandlerImpl(BotController controller) {
+        this.controller = controller;
+    }
 
     public Optional<SendMessage> execute(String commandName, Session session) throws CommandHandlerException {
         SendMessage message = null;
@@ -27,11 +29,11 @@ public class CommandHandlerImpl implements CommandHandler {
             m.setAccessible(true);
             Command annotation = m.getDeclaredAnnotation(Command.class);
             if (annotation != null) {
-                if (annotation.name().equals(commandName)) {
+                if (commandName.contains(annotation.name())) {
                     try {
                         message = (SendMessage) m.invoke(controller, session);
                     } catch (IllegalAccessException | InvocationTargetException e) {
-                        throw new CommandHandlerException("Не удалось вызвать метод " + m, e);
+                        throw new CommandHandlerException(String.format("Failed to send method %s", m.toString()), e);
                     }
                 }
             }

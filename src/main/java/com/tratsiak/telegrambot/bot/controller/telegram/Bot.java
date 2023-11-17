@@ -1,4 +1,4 @@
-package com.tratsiak.telegrambot.bot.controller;
+package com.tratsiak.telegrambot.bot.controller.telegram;
 
 import com.tratsiak.telegrambot.bot.controller.telegram.handler.CommandHandler;
 import com.tratsiak.telegrambot.bot.controller.telegram.handler.CommandHandlerException;
@@ -19,16 +19,19 @@ import java.util.Optional;
 @Component
 public class Bot extends TelegramLongPollingBot {
 
-    @Autowired
-    private CommandHandler commandHandler;
+    private final CommandHandler commandHandler;
+    private final UserSession userSession;
+    private final String name;
 
     @Autowired
-    private UserSession userSession;
-
-    private @Value("${bot.name}") String name;
-
-    public Bot(@Value("${bot.token}") String botToken) {
+    public Bot(@Value("${bot.token}") String botToken,
+               CommandHandler commandHandler,
+               UserSession userSession,
+               @Value("${bot.name}") String name) {
         super(botToken);
+        this.commandHandler = commandHandler;
+        this.userSession = userSession;
+        this.name = name;
     }
 
 
@@ -53,15 +56,17 @@ public class Bot extends TelegramLongPollingBot {
         if (optionalSession.isPresent()) {
             Session session = optionalSession.get();
             session.setChatId(message.getChatId());
+            session.setPresentCommand(command);
 
             if (!update.hasCallbackQuery() && !message.isCommand()) {
                 session.setMassage(command);
                 command = session.getNextCommand();
             }
 
-
-            String finalCommand = command;
-            new Thread(() -> prepareAndSendResponse(finalCommand, session)).start();
+            if (command != null) {
+                String finalCommand = command;
+                new Thread(() -> prepareAndSendResponse(finalCommand, session)).start();
+            }
         }
     }
 

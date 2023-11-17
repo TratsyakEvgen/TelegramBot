@@ -26,9 +26,5 @@ public class ContractSerializer extends JsonSerializer<Contract> {
         gen.writeEndObject();
 
         gen.writeEndObject();
-
-
-
-
     }
 }
