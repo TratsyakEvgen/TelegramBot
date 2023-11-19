@@ -69,6 +69,17 @@ public class VisualPresentation {
                     .build()))
             .build();
 
+    public final static InlineKeyboardMarkup ACTIVATION_CONFIRMATION = InlineKeyboardMarkup.builder()
+            .keyboardRow(List.of(InlineKeyboardButton.builder()
+                    .text("Да")
+                    .callbackData("/activate")
+                    .build()))
+            .keyboardRow(List.of(InlineKeyboardButton.builder()
+                    .text("Нет")
+                    .callbackData("/menuASSOMI")
+                    .build()))
+            .build();
+
     public final static InlineKeyboardMarkup SELECT_SERVICE = InlineKeyboardMarkup.builder()
             .keyboardRow(List.of(InlineKeyboardButton.builder()
                     .text("IMS")
@@ -76,7 +87,7 @@ public class VisualPresentation {
                     .build()))
             .keyboardRow(List.of(InlineKeyboardButton.builder()
                     .text("Пакет промо")
-                    .callbackData("/activateByFly")
+                    .callbackData("/activatePromo")
                     .build()))
             .keyboardRow(List.of(InlineKeyboardButton.builder()
                     .text("ByFly")
@@ -152,16 +163,25 @@ public class VisualPresentation {
         return getSendMessage(userMessage, TM, chatId);
     }
 
-    public static SendMessage getContractMenu(String contract, long chatId) {
-        return getSendMessage("Введите договор (нажмите /start для отмены):", getContractMenu(contract), chatId);
+    public static SendMessage getContractMenu(String numberOfContract, long chatId) {
+        return getSendMessage("Введите договор (нажмите /start для отмены):", getContractMenu(numberOfContract), chatId);
     }
 
     public static SendMessage getCommentMenu(long chatId) {
         return getSendMessage("Введите комментарий (нажмите /start для отмены):", null, chatId);
     }
 
-    public static SendMessage getSelectService(String messaege, long chatId) {
-        return getSendMessage(messaege + "\nАктивировать как:", SELECT_SERVICE, chatId);
+    public static SendMessage getSelectService(String message, long chatId) {
+        return getSendMessage(message + "\nАктивировать как:", SELECT_SERVICE, chatId);
+    }
+
+    public static SendMessage getActivationConfirmation(String numberOfContract,
+                                                        String tariff,
+                                                        String service,
+                                                        long chatId) {
+        return getSendMessage(
+                String.format("Вы уверены, что хотите активироать услугу %s по договору %s как %s",
+                        tariff, numberOfContract, service), ACTIVATION_CONFIRMATION, chatId);
     }
 
     public static SendMessage getEventMenu(InfoByActivation infoByActivation, long chatId) {

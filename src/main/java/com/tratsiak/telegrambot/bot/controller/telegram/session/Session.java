@@ -4,6 +4,7 @@ package com.tratsiak.telegrambot.bot.controller.telegram.session;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.tratsiak.telegrambot.bot.model.Event;
+import com.tratsiak.telegrambot.bot.util.ServiceName;
 import lombok.*;
 
 import java.util.Map;
@@ -28,5 +29,13 @@ public class Session {
     private String massage;
     private Map<String, Event> eventMap;
     private Event event;
+    private ServiceName service;
+
+    public void clear(){
+        nextCommand = null;
+        eventMap = null;
+        event = null;
+        service = null;
+    }
 }
 

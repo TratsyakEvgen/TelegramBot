@@ -30,38 +30,45 @@ public class BotController {
 
     @Command(name = "/start")
     public SendMessage getStartMenu(Session session) {
+        session.clear();
         return VisualPresentation.getStartMenu(String.format("Привет, %s!", session.getName()), session.getChatId());
     }
 
     @Command(name = "/mainMenu")
     public SendMessage getMainMenu(Session session) {
+        session.clear();
         return VisualPresentation.getMainMenu(session.getChatId());
     }
 
     @Command(name = "/menuASSOMI")
     public SendMessage getMenuASSOMI(Session session) {
+        session.clear();
         return VisualPresentation.getMenuASSOMI(session.getChatId());
     }
 
     @Command(name = "/menuTM")
     public SendMessage getTmMenu(Session session) {
+        session.clear();
         return VisualPresentation.getMenuTM(session.getChatId());
     }
 
     @Command(name = "/statusMenuTM")
     public SendMessage getContractStatusTm(Session session) {
+        session.clear();
         session.setNextCommand("/statusTM");
         return VisualPresentation.getContractMenu(session.getNumberOfContract(), session.getChatId());
     }
 
     @Command(name = "/blockMenuTM")
     public SendMessage getContractBlockTm(Session session) {
+        session.clear();
         session.setNextCommand("/blockCommentTM");
         return VisualPresentation.getContractMenu(session.getNumberOfContract(), session.getChatId());
     }
 
     @Command(name = "/blockCommentTM")
     public SendMessage getCommentBlockTm(Session session) {
+        session.clear();
         session.setNextCommand("/blockTM");
         session.setNumberOfContract(session.getMassage());
         return VisualPresentation.getCommentMenu(session.getChatId());
@@ -69,12 +76,14 @@ public class BotController {
 
     @Command(name = "/activateMenuASSOMI")
     public SendMessage getContractActivateASSOMI(Session session) {
+        session.clear();
         session.setNextCommand("/eventMenuASSOMI");
         return VisualPresentation.getContractMenu(session.getNumberOfContract(), session.getChatId());
     }
 
     @Command(name = "/statusMenuASSOMI")
     public SendMessage getContractStatusASSOMI(Session session) {
+        session.clear();
         session.setNextCommand("/statusASSOMI");
         return VisualPresentation.getContractMenu(session.getNumberOfContract(), session.getChatId());
     }
@@ -82,7 +91,7 @@ public class BotController {
 
     @Command(name = "/statusASSOMI")
     public SendMessage getStatusASSOMI(Session session) {
-        session.setNextCommand(null);
+        session.clear();
         String numberOfContract = session.getMassage();
         session.setNumberOfContract(numberOfContract);
         long chatId = session.getChatId();
@@ -111,7 +120,7 @@ public class BotController {
 
     @Command(name = "/statusTM")
     public SendMessage getStatusTm(Session session) {
-        session.setNextCommand(null);
+        session.clear();
         String numberOfContract = session.getMassage();
         session.setNumberOfContract(numberOfContract);
         long chatId = session.getChatId();
@@ -136,8 +145,8 @@ public class BotController {
 
     @Command(name = "/blockTM")
     public SendMessage blockTm(Session session) {
+        session.clear();
         if (checkPreviousCommand(session, "/blockCommentTM")) {
-            session.setNextCommand(null);
             long chatId = session.getChatId();
 
             Contract contract = Contract.builder()
@@ -209,7 +218,7 @@ public class BotController {
 
         String eventId = session.getPresentCommand().split("/")[2];
         Event event = eventMap.get(eventId);
-        session.setEventMap(null);
+        session.clear();
 
         if (event == null) {
             return VisualPresentation.getMenuASSOMI(chatId);
@@ -221,30 +230,61 @@ public class BotController {
 
     @Command(name = "/activateIMS")
     public SendMessage activateIMS(Session session) {
-        return activate(session, ServiceName.IMS);
+        if (!checkPreviousCommand(session, "/serviceMenu")) {
+            return getMenuASSOMI(session);
+        }
+        session.setService(ServiceName.IMS);
+        return VisualPresentation.getActivationConfirmation(session.getNumberOfContract(),
+                session.getEvent().getTariff(), ServiceName.IMS.getTitle(), session.getChatId());
+
     }
 
     @Command(name = "/activateByFly")
     public SendMessage activateByFly(Session session) {
-        return activate(session, ServiceName.BYFLY);
+        if (!checkPreviousCommand(session, "/serviceMenu")) {
+            return getMenuASSOMI(session);
+        }
+        session.setService(ServiceName.BYFLY);
+        return VisualPresentation.getActivationConfirmation(session.getNumberOfContract(),
+                session.getEvent().getTariff(), ServiceName.BYFLY.getTitle(), session.getChatId());
+    }
+
+    @Command(name = "/activatePromo")
+    public SendMessage activatePromo(Session session) {
+        if (!checkPreviousCommand(session, "/serviceMenu")) {
+            return getMenuASSOMI(session);
+        }
+        session.setService(ServiceName.BYFLY);
+        return VisualPresentation.getActivationConfirmation(session.getNumberOfContract(),
+                session.getEvent().getTariff(), "Пакет промо", session.getChatId());
     }
 
     @Command(name = "/activatePackage")
     public SendMessage activatePackage(Session session) {
-        return activate(session, ServiceName.PACKAGE);
+        if (!checkPreviousCommand(session, "/serviceMenu")) {
+            return getMenuASSOMI(session);
+        }
+        session.setService(ServiceName.PACKAGE);
+        return VisualPresentation.getActivationConfirmation(session.getNumberOfContract(),
+                session.getEvent().getTariff(), ServiceName.PACKAGE.getTitle(), session.getChatId());
     }
 
     @Command(name = "/activateZala")
     public SendMessage activateZala(Session session) {
-        return activate(session, ServiceName.ZALA);
+        if (!checkPreviousCommand(session, "/serviceMenu")) {
+            return getMenuASSOMI(session);
+        }
+        session.setService(ServiceName.ZALA);
+        return VisualPresentation.getActivationConfirmation(session.getNumberOfContract(),
+                session.getEvent().getTariff(), ServiceName.ZALA.getTitle(), session.getChatId());
     }
 
-
-    private SendMessage activate(Session session, ServiceName serviceName) {
+    @Command(name = "/activate")
+    public SendMessage activate(Session session) {
         long chatId = session.getChatId();
 
         Event event = session.getEvent();
-        session.setEvent(null);
+        session.clear();
         if (event == null) {
             return VisualPresentation.getMenuASSOMI(chatId);
         }
@@ -253,8 +293,9 @@ public class BotController {
                 .userId(session.getUserId())
                 .numberOfContract(session.getNumberOfContract())
                 .action(ActionName.ASSOMI_ACTIVATE.getTitle())
-                .comment(serviceName.getTitle())
+                .comment(session.getService().getTitle())
                 .build();
+
         try {
             contractService.activate(contract, event);
             return VisualPresentation.getMenuASSOMI("Отправлено на активацию", chatId);
