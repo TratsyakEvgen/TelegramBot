@@ -1,0 +1,35 @@
+botName: TestBTKBot
+botToken: 6343214852:AAGvy8_qJw1RBeYBHSnz3qfJGKzzS7DJeks
+
+clientId: botClientCredentials
+gateway: http://localhost:8081
+
+#gateway: http://10.244.24.87:8081
+server:
+  servlet:
+    context-path: /TelegramBot
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          botClientCredentials:
+            provider: botClientCredentials
+            client-id: botClientCredentials
+            client-secret: botClientCredentials-secret
+            authorization-grant-type: client_credentials
+            scope: openid
+        provider:
+          botClientCredentials:
+            token-uri: http://localhost:9000/oauth2/token
+      resource-server:
+        jwt:
+          issuer-uri: http://localhost:9000
+
+logging:
+  level:
+    reactor:
+      netty:
+        http:
+          client: debug
